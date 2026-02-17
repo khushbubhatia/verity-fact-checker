@@ -2,7 +2,8 @@
 
 > Real-time misinformation verification using AI and live news search
 
-![Verity App Screenshot](https://via.placeholder.com/800x400/0f172a/60a5fa?text=Verity+Fact+Checker)
+![Verity App Screenshot]<img width="1125" height="632" alt="image" src="https://github.com/user-attachments/assets/ba4f10bf-d899-4288-8e24-9f4b4dd87a61" />
+
 
 ## 🎯 Overview
 

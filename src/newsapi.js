@@ -1,36 +1,59 @@
 // ─── newsapi.js ───────────────────────────────────────────────────────────────
-// GNews API with ENTITY BLOCKING:
-// Works in both Vite (browser) and Node.js (tests)
+// GNews API integration with backend proxy for CORS compatibility
+// Uses /api/news endpoint in production, direct call in development
 
 import { callAI } from "./api.js";
 
-// Get API key - works in both Vite and Node.js
 const GNEWS_KEY = (typeof import.meta.env !== 'undefined' && import.meta.env.VITE_GNEWS_KEY) 
   || process.env.VITE_GNEWS_KEY;
 
-const BASE = "https://gnews.io/api/v4";
+// Determine if we're in production (Vercel) or development (localhost)
+const IS_PRODUCTION = window.location.hostname !== 'localhost';
 
 async function trySearch(query) {
-  const url = new URL(`${BASE}/search`);
-  url.searchParams.set("q",        query);
-  url.searchParams.set("lang",     "en");
-  url.searchParams.set("sortby",   "publishedAt");
-  url.searchParams.set("max",      "20");
-  url.searchParams.set("apikey",   GNEWS_KEY);
+  if (IS_PRODUCTION) {
+    // Production: Use Vercel serverless function to avoid CORS
+    const url = new URL('/api/news', window.location.origin);
+    url.searchParams.set('q', query);
+    url.searchParams.set('lang', 'en');
+    url.searchParams.set('sortby', 'publishedAt');
+    url.searchParams.set('max', '20');
 
-  const res = await fetch(url.toString());
-  
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.errors?.[0] || `${res.status}`);
+    const res = await fetch(url.toString());
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || `${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.articles || [];
+    
+  } else {
+    // Development: Call GNews API directly (works on localhost)
+    const url = new URL('https://gnews.io/api/v4/search');
+    url.searchParams.set('q', query);
+    url.searchParams.set('lang', 'en');
+    url.searchParams.set('sortby', 'publishedAt');
+    url.searchParams.set('max', '20');
+    url.searchParams.set('apikey', GNEWS_KEY);
+
+    const res = await fetch(url.toString());
+    
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.errors?.[0] || `${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.articles || [];
   }
-
-  const data = await res.json();
-  return data.articles || [];
 }
 
 export async function fetchNewsArticles(topic) {
-  if (!GNEWS_KEY) throw new Error("VITE_GNEWS_KEY missing in .env");
+  if (!IS_PRODUCTION && !GNEWS_KEY) {
+    throw new Error("VITE_GNEWS_KEY missing in .env");
+  }
 
   // Clean input
   const cleaned = topic
@@ -127,7 +150,7 @@ Return ONLY the corrected words, same count, no additions.`;
       url:     a.url || null,
     }));
 
-  // ENTITY-BASED BLOCKING
+  // Entity-based filtering
   try {
     const articleList = normalized
       .map((a, i) => `${i}. ${a.headline}\n   ${a.snippet.slice(0, 80)}...`)

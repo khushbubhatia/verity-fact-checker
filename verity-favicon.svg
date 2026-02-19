@@ -1,0 +1,15 @@
+<!-- Verity Favicon - Save as favicon.svg in public folder -->
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="45" fill="#0f172a"/>
+  
+  <!-- Checkmark in shield shape -->
+  <path d="M50 15 L70 25 L70 50 Q70 65 50 75 Q30 65 30 50 L30 25 Z" 
+        fill="#60a5fa" stroke="#3b82f6" stroke-width="2"/>
+  
+  <!-- Checkmark -->
+  <path d="M38 48 L46 56 L62 38" 
+        fill="none" stroke="white" stroke-width="5" 
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
